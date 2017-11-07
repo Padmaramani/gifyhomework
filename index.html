@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <title>Favorite Locations</title>
+  <style type="text/css">
+    button,
+    div,
+    form,
+    input {
+      margin: 10px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+    <h1>Locations Search</h1>
+
+    <div id="topic-view"></div>
+
+
+   <div id="gifs-appear-here"></div>
+
+    <form id="topic-form">
+      <label for="topic-input">Add a vacation</label>
+      <input type="text" id="topic-input"><br>
+
+     
+      <input id="add-topic" type="submit" value="Add a topic">
+    </form>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script type="text/javascript">
+    
+      var topics = ["family vacation", "charity", "spirituality", "sanskrit", "artificial intelligence"];
+
+       
+      //When a vacation button is cliked this function will get related images using gify API
+      $("body").on("click","button", function() {
+
+        var topic = $(this).attr("data-name");
+        var queryURL = "https://api.giphy.com/v1/gifs/search?api_key=ifhS1uxVM37leTwC2yECAB3eLKcQ3yrk&q=" + topic + "&limit=10&offset=0&lang=en";
+        console.log(queryURL);
+
+        // Creating an AJAX call for the specific vacation button being clicked
+        $.ajax({
+          url: queryURL,
+          method: "GET"
+        }).done(function(response) {
+
+        var results = response.data;
+        console.log(results);
+
+    for (var i = 0; i < results.length; i++) {
+
+        if (results[i].rating !== "r" && results[i].rating !== "pg-13") {
+             
+              var topicDiv = $("<div class='item'>");
+              var rating = results[i].rating;
+              var p = $("<p>").text("Rating: " + rating);
+              var topicImage = $("<img>");
+
+              topicImage.attr("src", results[i].images.fixed_height.url);
+              topicImage.attr("data-still",results[i].images.fixed_height_still.url);
+              topicImage.attr("data-animate",results[i].images.fixed_height.url);
+              topicImage.attr("data-state","animate");
+              topicImage.attr("class","gif");
+              topicDiv.append(p);
+              topicDiv.append(topicImage);
+              $("#gifs-appear-here").prepend(topicDiv);
+            }
+          }
+        })
+      });
+
+    $("body").on("click",".gif", function() {
+    
+      // The attr jQuery method allows us to get or set the value of any attribute on our HTML element
+      console.log("I am insdie gif click");
+      var state = $(this).data("state");
+      // If the clicked image's state is still, update its src attribute to what its data-animate value is.
+      // Then, set the image's data-state to animate
+      // Else set src to the data-still value
+      if (state === "still") {
+        $(this).attr("src", $(this).data("animate"));
+        $(this).data("state", "animate");
+        console.log("Switched state: " +$(this).data("state"));
+      } else {
+        $(this).attr("src", $(this).data("still"));
+        $(this).data("state", "still");
+        console.log("Switched state: " + $(this).data("state"));
+
+      }
+    });
+        
+    // This function add a new vacation to the array and button list
+   
+
+      // This function loops through the array and adds a button for each vacation spot
+      function renderButtons() {
+         $("#vacation-view").empty();
+         for (var i = 0; i < topics.length; i++) {
+          appendButton(topics[i]);
+        }
+      }
+
+      //This function is called to create a button for each vacation in the array
+      function appendButton(topic) {
+        var a = $("<button>");
+        a.addClass("topic");
+        a.attr("data-name", topic);
+        a.text(topic);
+        $("#topic-view").append(a);
+      }
+
+      renderButtons();
+
+      // This function add a new vacation to the array and button list
+      $("#add-topic").on("click", function(event) {
+        event.preventDefault();
+        var topic = $("#topic-input").val().trim();
+        topics.push(topic);
+        appendButton(topic);
+       // renderButtons();
+      
+      });
+   
+     
+    </script>
+  </div>
+</body>
+
+</html>
